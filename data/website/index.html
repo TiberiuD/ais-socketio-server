@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<!-- This document is not 'html 1.08-vicentiu-transitional'-compatible !-->
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <title>AIS Socket.IO Server</title>
+        <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+        <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
+
+        <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
+
+    </head>
+    <body>
+        <div class="container">
+            <h1 class="mt-5">AIS Socket.IO Server</h1>
+            <p class="lead">Listens for NMEA messages from <i>rtl-ais</i> and broadcasts them via Socket.IO</p>
+
+            <p>This webpage is just a proof-of-concept webapp.</p>
+            <p>Please open the Developer Tools in order to see the live data feed in the Console.</p>
+
+            <h2>Last received message</h2>
+            <ul>
+                <li>NMEA Sentence: <code id="nmea-sentence">N/A</code></li>
+                <li>MMSI: <code id="mmsi">N/A</code></li>
+                <li>AIS Message type: <code id="message-type">N/A</code></li>
+                <li>Latitude: <code id="latitude">N/A</code></li>
+                <li>Longitude: <code id="longitude">N/A</code></li>
+            </ul>
+        </div>
+
+        <script>
+            var endpoint = location.protocol + '//' + location.hostname + (location.port ? ':' + location.port : '');
+            var socket = io.connect(endpoint);
+
+            socket.on('ais_rx', function (data) {
+                let parsedData = JSON.parse(data);
+                console.log(parsedData);
+
+                document.getElementById('nmea-sentence').innerText = parsedData.nmea.raw;
+                document.getElementById('mmsi').innerText = parsedData.decoded.mmsi;
+                document.getElementById('message-type').innerText = parsedData.decoded.type;
+                if(parsedData.decoded.type === 1) {
+                    document.getElementById('latitude').innerText = parsedData.decoded.lat;
+                    document.getElementById('longitude').innerText = parsedData.decoded.lon;
+                } else {
+                    document.getElementById('latitude').innerText = 'N/A';
+                    document.getElementById('longitude').innerText = 'N/A';
+                }
+            });
+        </script>
+    </body>
+</html>
